@@ -1,0 +1,114 @@
+#include <iostream>
+#include <iomanip>
+#include <map>
+
+using namespace std;
+
+// Start of the day
+map<string, map<string, int>> journeys = {
+    {"09:00", {{"up", 0}, {"down", 0}, {"revenue", 0}}},
+    {"11:00", {{"up", 0}, {"down", 0}, {"revenue", 0}}},
+    {"13:00", {{"up", 0}, {"down", 0}, {"revenue", 0}}},
+    {"15:00", {{"up", 0}, {"down", 0}, {"revenue", 0}}}
+};
+
+// Purchase tickets
+void purchase_tickets() {
+    string journey_time;
+    int num_passengers;
+
+    cout << "Enter the journey time (in HH:MM format): ";
+    cin >> journey_time;
+    cout << "Enter the number of passengers: ";
+    cin >> num_passengers;
+
+    // Check if the journey time is valid
+    if (journeys.find(journey_time) == journeys.end()) {
+        cout << "Invalid journey time." << endl;
+        return;
+    }
+
+    auto& journey = journeys[journey_time];
+
+    // Check if there are enough tickets available
+    if (num_passengers * 2 > 80 * 6) {
+        cout << "Not enough seats available." << endl;
+        return;
+    }
+
+    // Calculate the total price including group discount
+    int price_per_ticket = 25;
+    int total_price = num_passengers * price_per_ticket;
+
+    if (num_passengers >= 10 && num_passengers <= 80) {
+        int free_tickets = num_passengers / 10;
+        total_price -= free_tickets * price_per_ticket;
+    }
+
+    // Update the screen display and the data for the totals
+    journey["up"] += num_passengers;
+    journey["revenue"] += total_price;
+
+    cout << "\nTickets purchased successfully." << endl;
+    cout << "Total amount paid: $" << total_price << "\n";
+}
+
+// End of the day report
+void end_of_day() {
+    int total_passengers = 0;
+    int total_revenue = 0;
+    int max_passengers = 0;
+    string max_journey_time = "";
+
+    cout << "\nEnd of the day report:\n";
+
+    for (const auto& entry : journeys) {
+        const string& journey_time = entry.first;
+        const auto& journey = entry.second;
+
+        total_passengers += journey.at("up");
+        total_revenue += journey.at("revenue");
+
+        cout << "Journey Time: " << setw(5) << journey_time;
+        cout << " | Passengers: " << setw(3) << journey.at("up");
+        cout << " | Revenue: $" << setw(6) << journey.at("revenue") << "\n";
+
+        if (journey.at("up") > max_passengers) {
+            max_passengers = journey.at("up");
+            max_journey_time = journey_time;
+        }
+    }
+
+    cout << "\nTotal passengers for the day: " << total_passengers << "\n";
+    cout << "Total revenue collected for the day: $" << total_revenue << "\n";
+    cout << "Journey with the most passengers: " << max_journey_time << " with " << max_passengers << " passengers.\n";
+}
+
+// Main execution
+int main() {
+    cout << "Start of the day.\n";
+
+    cout << "\nJourney times:\n";
+    for (const auto& entry : journeys) {
+        cout << entry.first << endl;
+    }
+
+    while (true) {
+        char choice;
+        cout << "\nEnter '1' to purchase tickets, '2' to end day, or 'q' to quit: ";
+        cin >> choice;
+
+        if (choice == '1') {
+            purchase_tickets();
+        } else if (choice == '2') {
+            end_of_day();
+            break;
+        } else if (tolower(choice) == 'q') {
+            break;
+        } else {
+            cout << "Invalid choice.\n";
+        }
+    }
+
+    return 0;
+}
